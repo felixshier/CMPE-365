@@ -96,11 +96,11 @@ class Point(object):
       # Draw edges to next CCW and CW points.
 
       if self.ccwPoint:
-        glColor3f( 0, 0, 1 )
+        glColor3f( 1, 0, 0 )
         drawArrow( self.x, self.y, self.ccwPoint.x, self.ccwPoint.y )
 
       if self.cwPoint:
-        glColor3f( 1, 0, 0 )
+        glColor3f( 0, 0, 1 )
         drawArrow( self.x, self.y, self.cwPoint.x, self.cwPoint.y )
 
 
@@ -170,33 +170,27 @@ def buildHull( points ):
     # Handle base cases of two or three points
     #
     if len(points) == 2:
-        points[0].ccwPoint = points[1]
-        points[0].cwPoint = points[1]
-        points[1].ccwPoint = points[0]
-        points[1].cwPoint = points[0]
+        for i in range(len(points)):
+            points[i].ccwPoint = points[(i-1)%len(points)]
+            points[i].cwPoint = points[(i-1)]
     
     elif len(points) == 3:
         # check if points form left turn
         if turn(points[0], points[1], points[2]) == 1:
-            points[0].ccwPoint = points[1]
-            points[0].cwPoint = points[2]
-            points[1].ccwPoint = points[2]
-            points[1].cwPoint = points[0]
-            points[2].ccwPoint = points[0]
-            points[2].cwPoint = points[1]
+            for i in range(len(points)):
+                points[i].ccwPoint = points[(i+1)%len(points)]
+                points[i].cwPoint = points[(i-1)]
 
         # check if points form right turn
         elif turn(points[0], points[1], points[2]) == 2:
-            points[0].ccwPoint = points[2]
-            points[0].cwPoint = points[1]
-            points[1].ccwPoint = points[0]
-            points[1].cwPoint = points[2]
-            points[2].ccwPoint = points[1]
-            points[2].cwPoint = points[0]
+            for i in range(len(points)):
+                points[i].ccwPoint = points[(i-1)]
+                points[i].cwPoint = points[(i+1)%len(points)]
         
-        # REVIEW THIS STATEMENT LATER
+        # on piazza, prof. Stewart mentioned that it can be assumed that groups of > 2 points will not be colinear
+        # https://piazza.com/class/kt4lblombqn4u2?cid=55
         else:
-            print("colinear")
+            print("Error: colinear points")
     
     # Handle recursive case.
     #
@@ -218,16 +212,18 @@ def buildHull( points ):
         l = leftPoints[-1]
         r = rightPoints[0]
 
+        # list of mid points
+        mid = []
+
         # check if l or r are in the middle of a left turn
         while (turn(l.ccwPoint, l, r) == 1) or (turn(l, r, r.cwPoint) == 1):
             if turn(l.ccwPoint, l, r) == 1:
+                mid.append(l)
                 l = l.ccwPoint
-                l.cwPoint.ccwPoint = None
-                #l.cwPoint = None
+
             elif turn(l, r, r.cwPoint) == 1:
+                mid.append(r)
                 r = r.cwPoint
-                r.ccwPoint.cwPoint = None
-                #r.ccwPoint = None
 
         # save tops
         ltop = l
@@ -240,13 +236,12 @@ def buildHull( points ):
         # check if l and r are in the middle of a right turn
         while (turn(l.cwPoint, l, r) == 2) or (turn(l, r, r.ccwPoint) == 2):
             if turn(l.cwPoint, l, r) == 2:
+                mid.append(l)
                 l = l.cwPoint
-                l.ccwPoint.cwPoint = None
-                #l.ccwPoint = None
+
             elif turn(l, r, r.ccwPoint):
+                mid.append(r)
                 r = r.ccwPoint
-                r.cwPoint.ccwPoint = None 
-                #r.cwPoint = None
 
         # save bottoms
         lbottom = l
@@ -258,9 +253,16 @@ def buildHull( points ):
         lbottom.ccwPoint = rbottom
         rbottom.cwPoint = lbottom
 
-        # remove pointers for nodes not on hull
-        
+        # remove middle points
 
+        topbottom = [ltop, lbottom, rtop, rbottom]
+
+        mid = [point for point in mid if point not in topbottom]
+
+        for point in mid:
+            point.cwPoint = None
+            point.ccwPoint = None
+        
 
     # You can do the following to help in debugging.  This highlights
     # all the points, then shows them, then pauses until you press
@@ -281,7 +283,7 @@ def buildHull( points ):
 
     for p in points:
         p.highlight = True
-        display(wait=False)
+    display(wait=True)
 
     # At the very end of buildHull(), you should display the result
     # after every merge, as shown below.  This call to display() does
