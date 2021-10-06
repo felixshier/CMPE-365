@@ -167,21 +167,23 @@ def turn( a, b, c ):
 
 def buildHull( points ):
 
-    # Handle base cases of two or three points
-    #
+    ##### Handle base cases of two or three points #####
+
+    #### build hull with 2 points ####
     if len(points) == 2:
         for i in range(len(points)):
             points[i].ccwPoint = points[(i-1)%len(points)]
             points[i].cwPoint = points[(i-1)]
-    
+
+    #### build hull with 3 points ####
     elif len(points) == 3:
-        # check if points form left turn
+        # check if points (0, 1, 2) form left turn
         if turn(points[0], points[1], points[2]) == 1:
             for i in range(len(points)):
                 points[i].ccwPoint = points[(i+1)%len(points)]
                 points[i].cwPoint = points[(i-1)]
 
-        # check if points form right turn
+        # check if points (0, 1, 2) form right turn
         elif turn(points[0], points[1], points[2]) == 2:
             for i in range(len(points)):
                 points[i].ccwPoint = points[(i-1)]
@@ -200,34 +202,52 @@ def buildHull( points ):
     # from interior points disappear after you do this.
     #
     # [YOUR CODE HERE]
+
+    #### build hull with > 3 points ####
     else:
+
+        ### split points into two groups and recursively build the hulls for each group ###
+
+        # find index of the middle point in the x-direction
         midIdx = round(len(points)/2)
+
+        # split points into two groups: left of the middle point and right of the middle point
         leftPoints = points[:midIdx]
         rightPoints = points[midIdx:]
 
+        # build the hull for the left group and the right group
         buildHull(leftPoints)
         buildHull(rightPoints)
 
-        # assign l and r to edges of hull
+        ### combine the left hull and the right hull ###
+
+        ## walking upwards ##
+
+        # assign l to the rightmost point in the left group
         l = leftPoints[-1]
+
+        # assign r to the leftmost point in the right group
         r = rightPoints[0]
 
-        # list of mid points
+        # initialize list of middle points (not in hull)
         mid = []
 
         # check if l or r are in the middle of a left turn
         while (turn(l.ccwPoint, l, r) == 1) or (turn(l, r, r.cwPoint) == 1):
+            # if l is in the middle of a left turn: add l to list of middle points and move l ccw
             if turn(l.ccwPoint, l, r) == 1:
                 mid.append(l)
                 l = l.ccwPoint
-
+            # if r is in the middle of a left turn: add r to list of middle points and move r cw
             elif turn(l, r, r.cwPoint) == 1:
                 mid.append(r)
                 r = r.cwPoint
 
-        # save tops
+        # save the top points of the left and right groups
         ltop = l
         rtop = r
+
+        ## walking downwards ##
 
         # reassign l and r to edges of hull
         l = leftPoints[-1]
@@ -235,30 +255,32 @@ def buildHull( points ):
         
         # check if l and r are in the middle of a right turn
         while (turn(l.cwPoint, l, r) == 2) or (turn(l, r, r.ccwPoint) == 2):
+            # if l is in the middle of a right turn: add l to list of middle points and move l cw
             if turn(l.cwPoint, l, r) == 2:
                 mid.append(l)
                 l = l.cwPoint
-
+            # if r is in the middle of a right turn: add r to list of middle points and move r ccw
             elif turn(l, r, r.ccwPoint):
                 mid.append(r)
                 r = r.ccwPoint
 
-        # save bottoms
+        # save the bottom points of the left and right groups
         lbottom = l
         rbottom = r
 
-        # connect top and bottom
+        # connect the top points together
         ltop.cwPoint = rtop
         rtop.ccwPoint = ltop
+
+        # connect the bottom points together
         lbottom.ccwPoint = rbottom
         rbottom.cwPoint = lbottom
 
-        # remove middle points
-
+        # remove top and bottom points from list of middle points
         topbottom = [ltop, lbottom, rtop, rbottom]
-
         mid = [point for point in mid if point not in topbottom]
 
+        # remove cw and ccw pointers for middle points (points not in hull)
         for point in mid:
             point.cwPoint = None
             point.ccwPoint = None
