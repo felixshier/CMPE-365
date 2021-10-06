@@ -167,27 +167,30 @@ def turn( a, b, c ):
 
 def buildHull( points ):
 
+    # find number of points
+    numPoints = len(points)
+
     ##### Handle base cases of two or three points #####
 
     #### build hull with 2 points ####
-    if len(points) == 2:
-        for i in range(len(points)):
-            points[i].ccwPoint = points[(i-1)%len(points)]
+    if numPoints == 2:
+        for i in range(numPoints):
+            points[i].ccwPoint = points[(i-1)]
             points[i].cwPoint = points[(i-1)]
 
     #### build hull with 3 points ####
-    elif len(points) == 3:
+    elif numPoints == 3:
         # check if points (0, 1, 2) form left turn
-        if turn(points[0], points[1], points[2]) == 1:
-            for i in range(len(points)):
-                points[i].ccwPoint = points[(i+1)%len(points)]
+        if turn(points[0], points[1], points[2]) == LEFT_TURN:
+            for i in range(numPoints):
+                points[i].ccwPoint = points[(i+1)%numPoints]
                 points[i].cwPoint = points[(i-1)]
 
         # check if points (0, 1, 2) form right turn
-        elif turn(points[0], points[1], points[2]) == 2:
-            for i in range(len(points)):
+        elif turn(points[0], points[1], points[2]) == RIGHT_TURN:
+            for i in range(numPoints):
                 points[i].ccwPoint = points[(i-1)]
-                points[i].cwPoint = points[(i+1)%len(points)]
+                points[i].cwPoint = points[(i+1)%numPoints]
         
         # on piazza, prof. Stewart mentioned that it can be assumed that groups of > 2 points will not be colinear
         # https://piazza.com/class/kt4lblombqn4u2?cid=55
@@ -209,7 +212,7 @@ def buildHull( points ):
         ### split points into two groups and recursively build the hulls for each group ###
 
         # find index of the middle point in the x-direction
-        midIdx = round(len(points)/2)
+        midIdx = round(numPoints/2)
 
         # split points into two groups: left of the middle point and right of the middle point
         leftPoints = points[:midIdx]
@@ -233,13 +236,13 @@ def buildHull( points ):
         mid = []
 
         # check if l or r are in the middle of a left turn
-        while (turn(l.ccwPoint, l, r) == 1) or (turn(l, r, r.cwPoint) == 1):
+        while (turn(l.ccwPoint, l, r) == LEFT_TURN) or (turn(l, r, r.cwPoint) == LEFT_TURN):
             # if l is in the middle of a left turn: add l to list of middle points and move l ccw
-            if turn(l.ccwPoint, l, r) == 1:
+            if turn(l.ccwPoint, l, r) == LEFT_TURN:
                 mid.append(l)
                 l = l.ccwPoint
             # if r is in the middle of a left turn: add r to list of middle points and move r cw
-            elif turn(l, r, r.cwPoint) == 1:
+            elif turn(l, r, r.cwPoint) == LEFT_TURN:
                 mid.append(r)
                 r = r.cwPoint
 
@@ -254,13 +257,13 @@ def buildHull( points ):
         r = rightPoints[0]
         
         # check if l and r are in the middle of a right turn
-        while (turn(l.cwPoint, l, r) == 2) or (turn(l, r, r.ccwPoint) == 2):
+        while (turn(l.cwPoint, l, r) == RIGHT_TURN) or (turn(l, r, r.ccwPoint) == RIGHT_TURN):
             # if l is in the middle of a right turn: add l to list of middle points and move l cw
-            if turn(l.cwPoint, l, r) == 2:
+            if turn(l.cwPoint, l, r) == RIGHT_TURN:
                 mid.append(l)
                 l = l.cwPoint
             # if r is in the middle of a right turn: add r to list of middle points and move r ccw
-            elif turn(l, r, r.ccwPoint):
+            elif turn(l, r, r.ccwPoint) == RIGHT_TURN:
                 mid.append(r)
                 r = r.ccwPoint
 
@@ -276,14 +279,12 @@ def buildHull( points ):
         lbottom.ccwPoint = rbottom
         rbottom.cwPoint = lbottom
 
-        # remove top and bottom points from list of middle points
+        # remove cw and ccw pointers for middle points
         topbottom = [ltop, lbottom, rtop, rbottom]
-        mid = [point for point in mid if point not in topbottom]
-
-        # remove cw and ccw pointers for middle points (points not in hull)
         for point in mid:
-            point.cwPoint = None
-            point.ccwPoint = None
+            if point not in topbottom:
+                point.cwPoint = None
+                point.ccwPoint = None
         
 
     # You can do the following to help in debugging.  This highlights
@@ -303,9 +304,9 @@ def buildHull( points ):
     # Always after you have inspected things, you should remove the
     # highlighting from the points that you previously highlighted.
 
-    for p in points:
-        p.highlight = True
-    display(wait=True)
+    #for p in points:
+    #    p.highlight = True
+    #display(wait=True)
 
     # At the very end of buildHull(), you should display the result
     # after every merge, as shown below.  This call to display() does
