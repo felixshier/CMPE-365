@@ -252,11 +252,13 @@ def buildHull( points ):
 
         ## walking downwards ##
 
-        # reassign l and r to edges of hull
+        # reassign l to the rightmost point in the left group
         l = leftPoints[-1]
+
+        # reassign r to the leftmost point in the right group
         r = rightPoints[0]
         
-        # check if l and r are in the middle of a right turn
+        # check if l or r are in the middle of a right turn
         while (turn(l.cwPoint, l, r) == RIGHT_TURN) or (turn(l, r, r.ccwPoint) == RIGHT_TURN):
             # if l is in the middle of a right turn: add l to list of middle points and move l cw
             if turn(l.cwPoint, l, r) == RIGHT_TURN:
