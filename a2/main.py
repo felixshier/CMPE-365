@@ -221,10 +221,30 @@ def turn( a, b, c ):
 def buildTristrips( triangles ):
 
     count = 0
-
+    trianglesLeft = triangles
+    currentTri = trianglesLeft[0]
     # [YOUR CODE HERE]
     #
     # Increment 'count' every time you *start* a new triStrip.
+    
+    while(len(trianglesLeft) > 1):
+
+        for i in range(len(currentTri.adjTris)):
+            if currentTri.adjTris[i].nextTri == None and currentTri.adjTris[i].prevTri == None:
+                currentTri.nextTri = currentTri.adjTris[i]
+                currentTri.adjTris[i].prevTri = currentTri
+                break
+        
+        if currentTri.nextTri != None:
+            trianglesLeft.remove(currentTri)
+            currentTri = currentTri.nextTri
+        
+        else:
+            trianglesLeft.remove(currentTri)
+            currentTri = trianglesLeft[0]
+            count += 1
+
+        display( wait=True )
 
     print( 'Generated %d tristrips' % count )
 
