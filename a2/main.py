@@ -221,7 +221,8 @@ def turn( a, b, c ):
 def buildTristrips( triangles ):
 
     count = 0
-    trianglesLeft = triangles
+    trianglesLeft = triangles.copy()
+    trianglesLeft.sort(key = lambda x: sum(tri.prevTri is None for tri in x.adjTris))
     currentTri = trianglesLeft[0]
     # [YOUR CODE HERE]
     #
@@ -241,6 +242,7 @@ def buildTristrips( triangles ):
         
         else:
             trianglesLeft.remove(currentTri)
+            trianglesLeft.sort(key = lambda x: sum(tri.prevTri is None for tri in x.adjTris))
             currentTri = trianglesLeft[0]
             count += 1
 
