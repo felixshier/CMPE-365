@@ -222,27 +222,25 @@ def buildTristrips( triangles ):
 
     count = 0
     trianglesLeft = triangles.copy()
-    trianglesLeft.sort(key = lambda x: sum(tri.prevTri is None for tri in x.adjTris))
+    trianglesLeft.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
     currentTri = trianglesLeft[0]
     # [YOUR CODE HERE]
     #
     # Increment 'count' every time you *start* a new triStrip.
     
     while(len(trianglesLeft) > 1):
-
-        for i in range(len(currentTri.adjTris)):
-            if currentTri.adjTris[i].nextTri == None and currentTri.adjTris[i].prevTri == None:
-                currentTri.nextTri = currentTri.adjTris[i]
-                currentTri.adjTris[i].prevTri = currentTri
-                break
+        validTris = [tri for tri in currentTri.adjTris if ((tri.prevTri is None) and (tri.nextTri is None))]
+        validTris.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
         
-        if currentTri.nextTri != None:
+        if len(validTris) > 0:
             trianglesLeft.remove(currentTri)
+            currentTri.nextTri = validTris[0]
+            currentTri.nextTri.prevTri = currentTri
             currentTri = currentTri.nextTri
         
         else:
             trianglesLeft.remove(currentTri)
-            trianglesLeft.sort(key = lambda x: sum(tri.prevTri is None for tri in x.adjTris))
+            trianglesLeft.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
             currentTri = trianglesLeft[0]
             count += 1
 
