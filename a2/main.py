@@ -244,7 +244,7 @@ def buildTristrips( triangles ):
             currentTri = trianglesLeft[0]
             count += 1
 
-        display( wait=True )
+        #display( wait=True )
 
     print( 'Generated %d tristrips' % count )
 
