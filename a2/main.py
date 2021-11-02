@@ -46,7 +46,6 @@ lastKey = None  # last key pressed
 showForwardLinks = True
 
 
-
 # Triangle
 #
 # A Triangle stores its three vertices and pointers to any adjacent triangles.
@@ -205,23 +204,23 @@ def turn( a, b, c ):
 # get number of valid edges
 edges = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris)
 
-def getStartTri( triangles ):
-    startTri = triangles[0]
-    for i in range(len(triangles)):
-        if edges(triangles[i]) < edges(startTri):
-            startTri = triangles[i]
+def getStartTri( trianglesLeft ):
+    startTri = trianglesLeft[0]
+    for i in range(len(trianglesLeft)):
+        if (edges(trianglesLeft[i]) < edges(startTri)):
+            startTri = trianglesLeft[i]
     
     return startTri
 
-def getNextTri( currentTri ):
+def getNextTri( currentTri, trianglesLeft ):
     validNextTris = [tri for tri in currentTri.adjTris if ((tri.prevTri is None) and (tri.nextTri is None))]
     if len(validNextTris) > 0:
         for i in range(len(validNextTris)):
             nextTri = validNextTris[0]
-            if edges(validNextTris[i]) < edges(nextTri):
+            if (edges(validNextTris[i]) < edges(nextTri)):
                 nextTri = validNextTris[i]
-    else:
-        nextTri = getStartTri()
+            else:
+                nextTri = None
 
     return nextTri
 
@@ -245,25 +244,23 @@ def buildTristrips( triangles ):
 
     count = 0
     trianglesLeft = triangles.copy()
-    #trianglesLeft.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
     currentTri = getStartTri(trianglesLeft)
     # [YOUR CODE HERE]
     #
     # Increment 'count' every time you *start* a new triStrip.
     
     while(len(trianglesLeft) > 1):
-        validTris = [tri for tri in currentTri.adjTris if ((tri.prevTri is None) and (tri.nextTri is None))]
-        validTris.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
-        
-        if len(validTris) > 0:
+
+        nextTri = getNextTri(currentTri)
+
+        if nextTri != None:
             trianglesLeft.remove(currentTri)
-            currentTri.nextTri = validTris[0]
-            currentTri.nextTri.prevTri = currentTri
-            currentTri = currentTri.nextTri
+            currentTri.nextTri = nextTri
+            nextTri.prevTri = currentTri
+            currentTri = nextTri
         
         else:
             trianglesLeft.remove(currentTri)
-            #trianglesLeft.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
             currentTri = getStartTri(trianglesLeft)
             count += 1
 
