@@ -206,21 +206,23 @@ edges = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x
 
 def getStartTri( trianglesLeft ):
     startTri = trianglesLeft[0]
-    for i in range(len(trianglesLeft)):
-        if (edges(trianglesLeft[i]) < edges(startTri)):
+    for i in range(1,len(trianglesLeft)):
+        if edges(startTri) == 1:      #Minimum value of edges found for possible nextTri, no need to check remaining
+            break
+        elif (edges(trianglesLeft[i]) < edges(startTri)):
             startTri = trianglesLeft[i]
-    
+
     return startTri
 
-def getNextTri( currentTri, trianglesLeft ):
+def getNextTri( currentTri ):
     validNextTris = [tri for tri in currentTri.adjTris if ((tri.prevTri is None) and (tri.nextTri is None))]
     if len(validNextTris) > 0:
-        for i in range(len(validNextTris)):
-            nextTri = validNextTris[0]
+        nextTri = validNextTris[0]
+        for i in range(1,len(validNextTris)):
             if (edges(validNextTris[i]) < edges(nextTri)):
                 nextTri = validNextTris[i]
-            else:
-                nextTri = None
+    else:
+        nextTri = None
 
     return nextTri
 
@@ -245,6 +247,7 @@ def buildTristrips( triangles ):
     count = 0
     trianglesLeft = triangles.copy()
     currentTri = getStartTri(trianglesLeft)
+    count += 1      
     # [YOUR CODE HERE]
     #
     # Increment 'count' every time you *start* a new triStrip.
