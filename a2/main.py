@@ -202,6 +202,29 @@ def turn( a, b, c ):
     else:
         return COLLINEAR
 
+# get number of valid edges
+edges = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris)
+
+def getStartTri( triangles ):
+    startTri = triangles[0]
+    for i in range(len(triangles)):
+        if edges(triangles[i]) < edges(startTri):
+            startTri = triangles[i]
+    
+    return startTri
+
+def getNextTri( currentTri ):
+    validNextTris = [tri for tri in currentTri.adjTris if ((tri.prevTri is None) and (tri.nextTri is None))]
+    if len(validNextTris) > 0:
+        for i in range(len(validNextTris)):
+            nextTri = validNextTris[0]
+            if edges(validNextTris[i]) < edges(nextTri):
+                nextTri = validNextTris[i]
+    else:
+        nextTri = getStartTri()
+
+    return nextTri
+
 
 
 # ================================================================
@@ -222,8 +245,8 @@ def buildTristrips( triangles ):
 
     count = 0
     trianglesLeft = triangles.copy()
-    trianglesLeft.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
-    currentTri = trianglesLeft[0]
+    #trianglesLeft.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
+    currentTri = getStartTri(trianglesLeft)
     # [YOUR CODE HERE]
     #
     # Increment 'count' every time you *start* a new triStrip.
@@ -240,8 +263,8 @@ def buildTristrips( triangles ):
         
         else:
             trianglesLeft.remove(currentTri)
-            trianglesLeft.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
-            currentTri = trianglesLeft[0]
+            #trianglesLeft.sort(key = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris))
+            currentTri = getStartTri(trianglesLeft)
             count += 1
 
         #display( wait=True )
