@@ -204,21 +204,26 @@ def turn( a, b, c ):
 # get number of valid edges
 edges = lambda x: sum((tri.prevTri is None and tri.nextTri is None) for tri in x.adjTris)
 
+# function used to find starting triangle with minimal available edges
 def getStartTri( trianglesLeft ):
     startTri = trianglesLeft[0]
     for i in range(1,len(trianglesLeft)):
-        if edges(startTri) == 1:      #Minimum value of edges found for possible nextTri, no need to check remaining
+        # minimum value of valid edges found for possible nextTri, no need to check remaining
+        if edges(startTri) == 1:      
             break
+        # set startTri to triangle with minimum value of valid edges
         elif (edges(trianglesLeft[i]) < edges(startTri)):
             startTri = trianglesLeft[i]
 
     return startTri
 
+# function used to find next triangle with minimal available edges
 def getNextTri( currentTri ):
     validNextTris = [tri for tri in currentTri.adjTris if ((tri.prevTri is None) and (tri.nextTri is None))]
     if len(validNextTris) > 0:
         nextTri = validNextTris[0]
         for i in range(1,len(validNextTris)):
+            # set nextTri to triangle with minimal available edges
             if (edges(validNextTris[i]) < edges(nextTri)):
                 nextTri = validNextTris[i]
     else:
@@ -246,22 +251,30 @@ def buildTristrips( triangles ):
 
     count = 0
     trianglesLeft = triangles.copy()
+
+    # find starting triangle using getStartTri()
     currentTri = getStartTri(trianglesLeft)
+
+    # increment count for the start of the first triStrip
     count += 1      
+
     # [YOUR CODE HERE]
     #
     # Increment 'count' every time you *start* a new triStrip.
     
     while(len(trianglesLeft) > 1):
-
+        
+        # find next triangle using getNextTri()
         nextTri = getNextTri(currentTri)
 
+        # if a next triangle is found: move to next triangle
         if nextTri != None:
             trianglesLeft.remove(currentTri)
             currentTri.nextTri = nextTri
             nextTri.prevTri = currentTri
             currentTri = nextTri
         
+        # if a next triangle is not found: find new starting triangle using getStartTri()
         else:
             trianglesLeft.remove(currentTri)
             currentTri = getStartTri(trianglesLeft)
