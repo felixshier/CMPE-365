@@ -160,7 +160,6 @@ class Dir(enum.Enum): # for storing directions of min-area
     PREV_ROW = 1
     PREV_COL = 2
 
-
 def buildTriangles( slice0, slice1 ):
 
     # Find the closest pair of vertices (one from each slice) to start with.
@@ -171,7 +170,17 @@ def buildTriangles( slice0, slice1 ):
 
 
     # [YOUR CODE HERE]
-
+    vertexFrom0 = None
+    vertexFrom1 = None
+    closestVertexDistance = -1
+    
+    for vertex_i in slice0.verts:
+        for vertex_j in slice1.verts:
+            vertexDistance = length(subtract(vertex_i.coords, vertex_j.coords))       
+            if (vertexDistance < closestVertexDistance) or (closestVertexDistance == -1):
+                closestVertexDistance = vertexDistance
+                vertexFrom0 = vertex_i
+                vertexFrom1 = vertex_j
 
     # Make a cyclic permutation of the vertices of each slice,
     # that starts at the closest vertex in each slice found above.
@@ -184,6 +193,19 @@ def buildTriangles( slice0, slice1 ):
 
     # [YOUR CODE HERE]
 
+    slice0Size = len(slice0.verts)
+    slice1Size = len(slice1.verts)
+
+    slice0Cycle = []
+    slice1Cycle = []
+
+    for i in range(vertexFrom0.id, vertexFrom0.id + slice0Size):
+        slice0.verts[i % slice0Size].nextV = slice0.verts[(i+1) % slice0Size]
+        slice0Cycle.append(slice0.verts[i % slice0Size])
+
+    for j in range(vertexFrom1.id, vertexFrom1.id + slice1Size):
+        slice1.verts[j % slice1Size].nextV = slice1.verts[(j+1) % slice1Size]
+        slice1Cycle.append(slice1.verts[j % slice1Size])
 
     # Set up the 'minArea' array.  The first dimension (rows) of the
     # array corresponds to vertices in slice1.  The second dimension
@@ -199,9 +221,8 @@ def buildTriangles( slice0, slice1 ):
 
     # [YOUR CODE HERE]
 
-
-    minArea = [[None]] # CHANGE THIS
-    minDir  = [[None]] # CHANGE THIS
+    minArea = [[0 for x in range(slice0Size)] for y in range(slice1Size)]
+    minDir  = [[0 for x in range(slice0Size)] for y in range(slice1Size)] 
 
 
     # Fill in the minArea array
@@ -215,6 +236,8 @@ def buildTriangles( slice0, slice1 ):
 
     # [YOUR CODE HERE]
 
+    for j in range(1, slice1Size):
+        minArea[0][j] = minArea[0][j-1] + triangleArea(slice0Cycle[0], slice1Cycle[i-1], slice1Cycle[i])
 
     # Fill in col 0 of minArea and minDir, since it's a special case as there's no col -1
     #
