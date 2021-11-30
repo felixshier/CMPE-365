@@ -221,10 +221,11 @@ def buildTriangles( slice0, slice1 ):
 
     # [YOUR CODE HERE]
 
-    minArea = [[0 for x in range(slice0Size)] for y in range(slice1Size)]
-    minDir  = [[0 for x in range(slice0Size)] for y in range(slice1Size)] 
+    numCols = slice0Size + 1
+    numRows = slice1Size + 1
 
-
+    minArea = [[0 for x in range(numCols)] for y in range(numRows)]
+    minDir  = [[0 for x in range(numCols)] for y in range(numRows)] 
     # Fill in the minArea array
 
     minArea[0][0] = 0 # Starting edge has zero area
@@ -236,24 +237,36 @@ def buildTriangles( slice0, slice1 ):
 
     # [YOUR CODE HERE]
 
-    for j in range(1, slice1Size):
-        minArea[0][j] = minArea[0][j-1] + triangleArea(slice0Cycle[0], slice1Cycle[i-1], slice1Cycle[i])
+    # update first row of minArea and minDir
+    for c in range(1, numCols):
+        minArea[0][c] = minArea[0][c-1] + triangleArea(slice1Cycle[0].coords, slice0Cycle[c%slice0Size].coords, slice0Cycle[c-1].coords)
+        minDir[0][c] = Dir.PREV_COL
 
     # Fill in col 0 of minArea and minDir, since it's a special case as there's no col -1
     #
     # [2 marks]
     
-
     # [YOUR CODE HERE]
 
+    # update first col of minArea and minDir
+    for r in range(1, numRows):
+        minArea[r][0] = minArea[r-1][0] + triangleArea(slice0Cycle[0].coords, slice1Cycle[r%slice1Size].coords, slice1Cycle[r-1].coords)
+        minDir[r][0] = Dir.PREV_ROW
 
     # Fill in the remaining entries of minArea and minDir.  This is very similar to the above, but more general.
     #
     # [2 marks]
 
-
     # [YOUR CODE HERE]
 
+    for r in range(1, numRows):
+        for c in range(1, numCols): 
+            minArea[r][c] = min(minArea[r-1][c] + triangleArea(slice1Cycle[r%slice1Size].coords, slice1Cycle[r-1].coords, slice0Cycle[c%slice0Size].coords), \
+                                minArea[r][c-1] + triangleArea(slice1Cycle[r%slice1Size].coords, slice0Cycle[c%slice0Size].coords, slice0Cycle[c-1].coords))
+            if minArea[r-1][c] < minArea[r][c-1]:
+                minDir[r][c] = Dir.PREV_ROW
+            else:
+                minDir[r][c] = Dir.PREV_COL
 
     # It's useful for debugging at this point to print out the minArea
     # and minDir arrays together.  For example, print a table in which
@@ -285,7 +298,13 @@ def buildTriangles( slice0, slice1 ):
 
 
     # [YOUR CODE HERE, OPTIONALLY]
+    #print('\n')
+    #print('\n'.join([''.join(['{:10}'.format('{0:.{1}f}'.format(item, 0)) for item in row]) 
+      #for row in minArea]))
 
+    #print('\n')
+    #print('\n'.join([''.join(['{:20}'.format(item) for item in row]) 
+      #for row in minDir]))
     
     # Walk backward through the 'minDir' array to build triangulation.
     #
@@ -307,12 +326,27 @@ def buildTriangles( slice0, slice1 ):
 
     # [YOUR CODE HERE]
 
+    r = slice1Size
+    c = slice0Size
+
+    while(True):
+        
+        if minDir[r][c] == Dir.PREV_COL:
+            triangle = Triangle(verts = [slice0Cycle[c%slice0Size], slice0Cycle[c-1], slice1Cycle[r%slice1Size]])
+            c -= 1
+        elif minDir[r][c] == Dir.PREV_ROW:
+            triangle = Triangle(verts = [slice0Cycle[c%slice0Size], slice1Cycle[r-1], slice1Cycle[r%slice1Size]])
+            r -= 1
+        else:
+            break
+
+        triangles.append(triangle)
 
     # Return a list of the triangles that you constructed
     
     return triangles
 
-
+    print(triangles)
 
 # Set up the display and draw the current image
 
